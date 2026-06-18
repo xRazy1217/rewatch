@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Heart, MessageCircle, Bookmark, MoreHorizontal } from 'lucide-react'
+import { Heart, MessageCircle, Bookmark, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatRelativeTime, formatCount } from '@/lib/utils'
 import { StarRating } from '@/components/shared/StarRating'
@@ -13,6 +14,7 @@ import { useLike } from '@/features/social/hooks/useLike'
 import { useSave } from '@/features/social/hooks/useSave'
 import { useAuthStore } from '@/store/authStore'
 import { CommentSheet } from '@/features/social/components/CommentSheet'
+import { RecommendationMenu } from '@/features/recommendations/components/RecommendationMenu'
 import type { Recommendation } from '@/types'
 
 interface FeedCardProps {
@@ -20,7 +22,68 @@ interface FeedCardProps {
   onLike?: (id: string) => void
   onSave?: (id: string) => void
   onComment?: (id: string) => void
+  onDeleted?: () => void
   className?: string
+}
+
+function ExternalLinkPill({ recommendation }: { recommendation: Recommendation }) {
+  const { source, externalMetadata } = recommendation
+
+  let href: string | null = null
+  let label: string | null = null
+  let pillStyle: React.CSSProperties = {}
+
+  if (source === 'spotify' && externalMetadata?.spotifyUrl) {
+    href = externalMetadata.spotifyUrl
+    label = '▶ Spotify'
+    pillStyle = {
+      background: 'rgba(29,185,84,0.10)',
+      color: '#1DB954',
+      border: '1px solid rgba(29,185,84,0.3)',
+    }
+  } else if (source === 'tmdb' && externalMetadata?.tmdbUrl) {
+    href = externalMetadata.tmdbUrl
+    label = '🎬 TMDB'
+    pillStyle = {
+      background: 'rgba(1,180,228,0.08)',
+      color: '#01b4e4',
+      border: '1px solid rgba(1,180,228,0.3)',
+    }
+  } else if (source === 'google_books' && externalMetadata?.openLibraryUrl) {
+    href = externalMetadata.openLibraryUrl
+    label = '📖 Open Library'
+    pillStyle = {
+      background: 'rgba(201,184,232,0.15)',
+      color: '#7A5C8A',
+      border: '1px solid rgba(201,184,232,0.4)',
+    }
+  }
+
+  if (!href || !label) return null
+
+  return (
+    <motion.a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.96 }}
+      className="inline-flex items-center gap-1 rounded-full"
+      style={{
+        ...pillStyle,
+        fontFamily: "'DM Sans', sans-serif",
+        fontSize: 11,
+        fontWeight: 500,
+        padding: '2px 8px',
+        textDecoration: 'none',
+        marginTop: 4,
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <ExternalLink style={{ width: 10, height: 10 }} />
+      {label}
+    </motion.a>
+  )
 }
 
 export function FeedCard({
@@ -28,6 +91,7 @@ export function FeedCard({
   onLike,
   onSave,
   onComment,
+  onDeleted,
   className,
 }: FeedCardProps) {
   const [liked, setLiked] = useState(recommendation.isLiked ?? false)
@@ -129,12 +193,11 @@ export function FeedCard({
               </div>
             </div>
 
-            <button
-              className="w-8 h-8 flex items-center justify-center rounded-full transition-colors hover:bg-black/5"
-              aria-label="más opciones"
-            >
-              <MoreHorizontal className="w-4 h-4" style={{ color: '#B8A8B0' }} />
-            </button>
+            <RecommendationMenu
+              recommendationId={recommendation.id}
+              userId={recommendation.userId}
+              onDeleted={onDeleted}
+            />
           </div>
 
           {/* Review snippet */}
@@ -153,63 +216,68 @@ export function FeedCard({
             </div>
           )}
 
-          {/* Media card */}
+          {/* Media card — clickable */}
           <div className="px-4 pb-3">
-            <div
-              className="flex gap-3 p-3 rounded-2xl"
-              style={{ background: '#FFFFFF', boxShadow: '0 1px 8px rgba(45,36,38,0.04)' }}
-            >
-              {/* Cover */}
+            <Link href={`/r/${recommendation.id}`} style={{ textDecoration: 'none', display: 'block' }}>
               <div
-                className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0"
-                style={{ background: '#FDE8EE' }}
+                className="flex gap-3 p-3 rounded-2xl"
+                style={{ background: '#FFFFFF', boxShadow: '0 1px 8px rgba(45,36,38,0.04)' }}
               >
-                {recommendation.coverUrl ? (
-                  <Image
-                    src={recommendation.coverUrl}
-                    alt={recommendation.title}
-                    fill
-                    className="object-cover"
-                    sizes="80px"
-                  />
-                ) : (
-                  <div
-                    className="w-full h-full flex items-center justify-center text-2xl"
-                    style={{ background: 'linear-gradient(135deg, #FDE8EE 0%, #F0EBFF 100%)' }}
-                  >
-                    {recommendation.type === 'movie' ? '🎬' :
-                     recommendation.type === 'song' ? '🎵' :
-                     recommendation.type === 'album' ? '💿' :
-                     recommendation.type === 'series' ? '📺' : '📖'}
-                  </div>
-                )}
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-                <div>
-                  <h3
-                    className="font-semibold text-sm leading-snug line-clamp-2"
-                    style={{ color: '#2D2426', fontFamily: "'Inter', sans-serif" }}
-                  >
-                    {recommendation.title}
-                  </h3>
-                  {recommendation.subtitle && (
-                    <p
-                      className="text-xs mt-0.5 truncate"
-                      style={{ color: '#7A6B72', fontFamily: "'DM Sans', sans-serif" }}
+                {/* Cover */}
+                <div
+                  className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0"
+                  style={{ background: '#FDE8EE' }}
+                >
+                  {recommendation.coverUrl ? (
+                    <Image
+                      src={recommendation.coverUrl}
+                      alt={recommendation.title}
+                      fill
+                      className="object-cover"
+                      sizes="80px"
+                    />
+                  ) : (
+                    <div
+                      className="w-full h-full flex items-center justify-center text-2xl"
+                      style={{ background: 'linear-gradient(135deg, #FDE8EE 0%, #F0EBFF 100%)' }}
                     >
-                      {recommendation.subtitle}
-                    </p>
+                      {recommendation.type === 'movie' ? '🎬' :
+                       recommendation.type === 'song' ? '🎵' :
+                       recommendation.type === 'album' ? '💿' :
+                       recommendation.type === 'series' ? '📺' : '📖'}
+                    </div>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between mt-1">
-                  <StarRating value={recommendation.rating} readonly size="sm" />
-                  <MediaTypeBadge type={recommendation.type} />
+                {/* Info */}
+                <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                  <div>
+                    <h3
+                      className="font-semibold text-sm leading-snug line-clamp-2"
+                      style={{ color: '#2D2426', fontFamily: "'Inter', sans-serif" }}
+                    >
+                      {recommendation.title}
+                    </h3>
+                    {recommendation.subtitle && (
+                      <p
+                        className="text-xs mt-0.5 truncate"
+                        style={{ color: '#7A6B72', fontFamily: "'DM Sans', sans-serif" }}
+                      >
+                        {recommendation.subtitle}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between mt-1">
+                    <StarRating value={recommendation.rating} readonly size="sm" />
+                    <MediaTypeBadge type={recommendation.type} />
+                  </div>
+
+                  {/* External link pill */}
+                  <ExternalLinkPill recommendation={recommendation} />
                 </div>
               </div>
-            </div>
+            </Link>
           </div>
 
           {/* Mood tags */}

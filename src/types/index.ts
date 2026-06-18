@@ -58,6 +58,9 @@ export interface Recommendation {
     authorName?: string
     pageCount?: number
     isbn?: string
+    spotifyUrl?: string
+    tmdbUrl?: string
+    openLibraryUrl?: string
   }
 
   // Social
