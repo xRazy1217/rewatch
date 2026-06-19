@@ -33,6 +33,7 @@ async function searchMedia(query: string, mediaType: MediaType): Promise<MediaSe
         albumName: t.album,
         previewUrl: t.previewUrl,
         spotifyUrl: t.spotifyUrl,
+        appleMusicUrl: t.appleMusicUrl,
         duration: t.duration,
       },
     }))
@@ -52,6 +53,8 @@ async function searchMedia(query: string, mediaType: MediaType): Promise<MediaSe
       extraMetadata: {
         artistName: t.artist,
         spotifyUrl: t.spotifyUrl,
+        appleMusicUrl: t.appleMusicUrl,
+        previewUrl: t.previewUrl,
       },
     }))
   }

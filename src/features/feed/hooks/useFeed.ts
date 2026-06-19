@@ -2,11 +2,11 @@
 
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
-import type { Recommendation } from '@/types'
+import type { Recommendation, MediaType } from '@/types'
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 15
 
-interface RawRecommendation {
+export interface RawRecommendation {
   id: string
   user_id: string
   type: string
@@ -37,7 +37,7 @@ interface RawRecommendation {
   }
 }
 
-function mapRow(row: RawRecommendation): Recommendation {
+export function mapRow(row: RawRecommendation): Recommendation {
   return {
     id: row.id,
     userId: row.user_id,
@@ -72,32 +72,29 @@ function mapRow(row: RawRecommendation): Recommendation {
   }
 }
 
-async function fetchFeed({ pageParam = 0 }: { pageParam: number }) {
-  const supabase = createClient()
-  const from = pageParam * PAGE_SIZE
-  const to = from + PAGE_SIZE - 1
-
-  const { data, error } = await supabase
-    .from('recommendations')
-    .select(`
-      *,
-      user:profiles!recommendations_user_id_fkey (
-        id, username, display_name, avatar_url, bio,
-        followers_count, following_count, created_at
-      )
-    `)
-    .eq('is_public', true)
-    .order('created_at', { ascending: false })
-    .range(from, to)
-
-  if (error) throw error
-  return ((data ?? []) as unknown as RawRecommendation[]).map(mapRow)
-}
-
-export function useFeed() {
+export function useFeed(mediaTypeFilter?: MediaType | 'all') {
   return useInfiniteQuery({
-    queryKey: ['feed'],
-    queryFn: fetchFeed,
+    queryKey: ['feed', mediaTypeFilter ?? 'all'],
+    queryFn: async ({ pageParam = 0 }) => {
+      const supabase = createClient()
+      const from = (pageParam as number) * PAGE_SIZE
+      const to = from + PAGE_SIZE - 1
+
+      let query = supabase
+        .from('recommendations')
+        .select(`*, user:profiles!recommendations_user_id_fkey(id,username,display_name,avatar_url,bio,followers_count,following_count,created_at)`)
+        .eq('is_public', true)
+        .order('created_at', { ascending: false })
+        .range(from, to)
+
+      if (mediaTypeFilter && mediaTypeFilter !== 'all') {
+        query = query.eq('type', mediaTypeFilter)
+      }
+
+      const { data, error } = await query
+      if (error) throw error
+      return ((data ?? []) as unknown as RawRecommendation[]).map(mapRow)
+    },
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) =>
       lastPage.length === PAGE_SIZE ? allPages.length : undefined,

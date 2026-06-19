@@ -3,12 +3,12 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Home, Compass, Plus, Bell, User } from 'lucide-react'
+import { Home, Plus, Bell, User, Bookmark } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const NAV_ITEMS = [
   { href: '/feed',     icon: Home,    label: 'inicio' },
-  { href: '/discover', icon: Compass, label: 'descubrir' },
+  { href: '/saved',    icon: Bookmark, label: 'guardado' },
   { href: '/create',   icon: Plus,    label: 'crear',   isCreate: true },
   { href: '/activity', icon: Bell,    label: 'actividad' },
   { href: '/profile',  icon: User,    label: 'perfil' },

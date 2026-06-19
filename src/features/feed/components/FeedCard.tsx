@@ -15,6 +15,7 @@ import { useSave } from '@/features/social/hooks/useSave'
 import { useAuthStore } from '@/store/authStore'
 import { CommentSheet } from '@/features/social/components/CommentSheet'
 import { RecommendationMenu } from '@/features/recommendations/components/RecommendationMenu'
+import { ReactionButton } from '@/features/social/components/ReactionButton'
 import type { Recommendation } from '@/types'
 
 interface FeedCardProps {
@@ -27,14 +28,16 @@ interface FeedCardProps {
 }
 
 function ExternalLinkPill({ recommendation }: { recommendation: Recommendation }) {
-  const { source, externalMetadata } = recommendation
+  const { source, externalMetadata, title, subtitle } = recommendation
 
   let href: string | null = null
   let label: string | null = null
   let pillStyle: React.CSSProperties = {}
 
-  if (source === 'spotify' && externalMetadata?.spotifyUrl) {
-    href = externalMetadata.spotifyUrl
+  if (source === 'spotify' && (externalMetadata?.spotifyUrl || title)) {
+    // Build Spotify search URL from title + artist
+    const searchTerm = subtitle ? `${title} ${subtitle}` : title
+    href = (externalMetadata?.spotifyUrl as string) || `https://open.spotify.com/search/${encodeURIComponent(searchTerm)}`
     label = '▶ Spotify'
     pillStyle = {
       background: 'rgba(29,185,84,0.10)',
@@ -288,6 +291,15 @@ export function FeedCard({
               ))}
             </div>
           )}
+
+          {/* Reaction — "ya lo vi/escuché/leí" */}
+          <div className="px-4 pb-3">
+            <ReactionButton
+              recommendationId={recommendation.id}
+              mediaType={recommendation.type}
+              ownerId={recommendation.userId}
+            />
+          </div>
 
           {/* Actions */}
           <div
