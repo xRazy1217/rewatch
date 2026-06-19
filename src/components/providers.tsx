@@ -32,20 +32,25 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const supabase = createClient()
 
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-      if (user) {
-        supabase.from('profiles').select('*').eq('id', user.id).single()
-          .then(({ data }) => { if (data) setProfile(data) })
-      }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any
+
+    async function fetchProfile(userId: string) {
+      const { data } = await db.from('profiles').select('*').eq('id', userId).single()
+      if (data) setProfile(data)
+    }
+
+    // Get initial session first
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+      if (session?.user) fetchProfile(session.user.id)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_, session) => {
         setUser(session?.user ?? null)
         if (session?.user) {
-          const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single()
-          if (data) setProfile(data)
+          await fetchProfile(session.user.id)
         } else {
           clear()
         }

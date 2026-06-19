@@ -14,6 +14,7 @@ import { EmptyState } from '@/components/shared/EmptyState'
 import { MoodTag } from '@/components/shared/MoodTag'
 import { EditProfileSheet } from '@/features/profile/components/EditProfileSheet'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useAuthStore } from '@/store/authStore'
 import { useProfileRecommendations } from '@/features/profile/hooks/useProfile'
 import { createClient } from '@/lib/supabase/client'
 import type { Collection, MoodTag as MoodTagType } from '@/types'
@@ -58,7 +59,8 @@ function useUserCollections(userId: string) {
 }
 
 export function ProfilePageClient() {
-  const { user, profile, signOut } = useAuth()
+  const { signOut } = useAuth()
+  const { user, profile } = useAuthStore()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>('posts')
   const [showEditProfile, setShowEditProfile] = useState(false)
