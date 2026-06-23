@@ -32,8 +32,28 @@ export function useSave() {
           .eq('user_id', user.id)
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['feed'] })
+    onSuccess: (_data, variables) => {
+      // Optimistic update: update the feed cache directly instead of refetching
+      queryClient.setQueriesData(
+        { queryKey: ['feed'] },
+        (oldData: any) => {
+          if (!oldData?.pages) return oldData
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page: any) =>
+              page.map((item: any) => {
+                if (item.id === variables.recommendationId) {
+                  return {
+                    ...item,
+                    savesCount: variables.saved ? item.savesCount + 1 : item.savesCount - 1,
+                  }
+                }
+                return item
+              })
+            ),
+          }
+        }
+      )
     },
   })
 }

@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { FeedCard } from './FeedCard'
 import { EmptyState } from '@/components/shared/EmptyState'
 import type { Recommendation } from '@/types'
@@ -12,10 +11,6 @@ interface FeedListProps {
   onLike?: (id: string) => void
   onSave?: (id: string) => void
   onComment?: (id: string) => void
-}
-
-const listVariants = {
-  animate: { transition: { staggerChildren: 0.07 } },
 }
 
 export function FeedList({
@@ -39,12 +34,7 @@ export function FeedList({
   }
 
   return (
-    <motion.div
-      variants={listVariants}
-      initial="initial"
-      animate="animate"
-      className="flex flex-col gap-4 px-4"
-    >
+    <div className="flex flex-col gap-4 px-4">
       {recommendations.map((rec, i) => {
         const isLast = i === recommendations.length - 1
         return (
@@ -58,6 +48,6 @@ export function FeedList({
           </div>
         )
       })}
-    </motion.div>
+    </div>
   )
 }

@@ -1,7 +1,6 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { motion } from 'framer-motion'
 import { PageTransition } from '@/components/layout/PageTransition'
 import { FeedList } from '@/features/feed/components/FeedList'
 import { FeedCardSkeleton } from '@/features/feed/components/FeedCardSkeleton'
@@ -117,9 +116,7 @@ export function SavedPageClient() {
         className="sticky top-0 z-40 glass border-b px-5 py-4"
         style={{ borderColor: 'rgba(201,184,232,0.2)' }}
       >
-        <motion.h1
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
+        <h1
           style={{
             fontFamily: "'DM Serif Display', serif",
             fontSize: '1.5rem',
@@ -128,7 +125,7 @@ export function SavedPageClient() {
           }}
         >
           guardado
-        </motion.h1>
+        </h1>
       </header>
 
       <div className="pb-24 pt-4">

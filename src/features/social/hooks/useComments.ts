@@ -60,8 +60,29 @@ export function useAddComment() {
       if (error) throw error
     },
     onSuccess: (_data, variables) => {
+      // Invalidate only the specific comment thread, not the entire feed
       queryClient.invalidateQueries({ queryKey: ['comments', variables.recommendationId] })
-      queryClient.invalidateQueries({ queryKey: ['feed'] })
+      // Optimistic update: update comment count in feed instead of refetching
+      queryClient.setQueriesData(
+        { queryKey: ['feed'] },
+        (oldData: any) => {
+          if (!oldData?.pages) return oldData
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page: any) =>
+              page.map((item: any) => {
+                if (item.id === variables.recommendationId) {
+                  return {
+                    ...item,
+                    commentsCount: item.commentsCount + 1,
+                  }
+                }
+                return item
+              })
+            ),
+          }
+        }
+      )
     },
   })
 }

@@ -1,49 +1,19 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useAuthStore } from '@/store/authStore'
 
+// Pure store accessor — NO listeners here (AuthProvider handles all auth events)
 export function useAuth() {
-  const { user, profile, setUser, setProfile, clear } = useAuthStore()
-
-  useEffect(() => {
-    const supabase = createClient()
-
-    // Get initial session
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-      if (user) fetchProfile(user.id)
-    })
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null)
-        if (session?.user) {
-          await fetchProfile(session.user.id)
-        } else {
-          clear()
-        }
-      }
-    )
-
-    async function fetchProfile(userId: string) {
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
-      if (data) setProfile(data)
-    }
-
-    return () => subscription.unsubscribe()
-  }, [setUser, setProfile, clear])
+  const { user, profile, clear } = useAuthStore()
+  const router = useRouter()
 
   async function signOut() {
     const supabase = createClient()
     await supabase.auth.signOut()
     clear()
+    router.replace('/login')
   }
 
   return { user, profile, signOut }

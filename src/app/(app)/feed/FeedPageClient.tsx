@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { PageTransition } from '@/components/layout/PageTransition'
 import { FeedList } from '@/features/feed/components/FeedList'
 import { FeedCardSkeleton } from '@/features/feed/components/FeedCardSkeleton'
@@ -45,24 +45,26 @@ export function FeedPageClient() {
         style={{ borderColor: 'rgba(201,184,232,0.2)' }}
       >
         <div style={{ padding: '16px 20px 0' }}>
-          <h1
-            style={{
-              fontFamily: "'DM Serif Display', Georgia, serif",
-              fontSize: '1.6rem', color: '#2D2426', fontWeight: 400, marginBottom: 12,
-            }}
-          >
-            rewatch
-          </h1>
+          <div style={{ marginBottom: 12, height: 48, position: 'relative', width: 160 }}>
+            <Image
+              src="/logo_interno.png"
+              alt="Rewatch"
+              fill
+              style={{ objectFit: 'contain', objectPosition: 'left' }}
+              priority
+            />
+          </div>
 
           {/* Filter tabs */}
           <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 12, scrollbarWidth: 'none' }}>
             {FILTERS.map(f => {
               const isActive = activeFilter === f.value
               return (
-                <motion.button
+                <button
                   key={f.value}
-                  whileTap={{ scale: 0.95 }}
+                  type="button"
                   onClick={() => setActiveFilter(f.value)}
+                  className="active:scale-95 transition-transform duration-150"
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5,
                     padding: '6px 14px', borderRadius: 20, border: 'none',
@@ -76,7 +78,7 @@ export function FeedPageClient() {
                 >
                   <span>{f.emoji}</span>
                   <span>{f.label}</span>
-                </motion.button>
+                </button>
               )
             })}
           </div>

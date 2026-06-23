@@ -34,7 +34,14 @@ export async function GET(request: Request) {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const results = (data.results ?? []).map((item: any): MusicTrack => {
-      const image = item.artworkUrl100?.replace('100x100', '600x600') ?? ''
+      // Try to get image with fallback: artworkUrl600 > artworkUrl100 > empty string
+      let image = ''
+      if (item.artworkUrl600) {
+        image = item.artworkUrl600
+      } else if (item.artworkUrl100) {
+        image = item.artworkUrl100
+      }
+      
       const spotifySearch = `https://open.spotify.com/search/${encodeURIComponent(`${item.trackName ?? item.collectionName} ${item.artistName}`)}`
       const appleMusicUrl = item.trackViewUrl ?? item.collectionViewUrl ?? ''
 
@@ -49,7 +56,7 @@ export async function GET(request: Request) {
         appleMusicUrl,
         duration: item.trackTimeMillis ?? 0,
       }
-    }).filter((t: MusicTrack) => t.title)
+    })
 
     return NextResponse.json({ results })
   } catch (err) {

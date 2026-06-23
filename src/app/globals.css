@@ -144,17 +144,30 @@
     font-family: 'DM Sans', system-ui, sans-serif;
   }
 
-  /* Glassmorphism */
+  /* Glassmorphism — lighter blur + compositing layer for sticky headers */
   .glass {
-    background: rgba(253, 250, 247, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(253, 250, 247, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transform: translateZ(0);
   }
 
   .glass-dark {
-    background: rgba(45, 36, 38, 0.6);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(45, 36, 38, 0.72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transform: translateZ(0);
+  }
+
+  /* Page enter — CSS-only, no JS animation library on navigation */
+  .page-enter {
+    animation: page-enter 0.15s ease-out both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page-enter {
+      animation: none;
+    }
   }
 
   /* Safe area */
@@ -210,6 +223,11 @@
 @keyframes scale-in {
   from { transform: scale(0.95); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
+}
+
+@keyframes page-enter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .animate-float {

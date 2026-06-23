@@ -1,7 +1,6 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { motion } from 'framer-motion'
 import { Heart, MessageCircle, Bookmark, UserPlus } from 'lucide-react'
 import Image from 'next/image'
 import { PageTransition } from '@/components/layout/PageTransition'
@@ -122,18 +121,15 @@ export function ActivityPageClient() {
           />
         ) : (
           <div className="flex flex-col pt-2">
-            {notifications.map((notif, i) => {
+            {notifications.map((notif) => {
               const config = TYPE_CONFIG[notif.type]
               const Icon = config.icon
               const avatarFallback = notif.actor.display_name
                 .split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
 
               return (
-                <motion.div
+                <div
                   key={notif.id}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.04 }}
                   className="flex items-center gap-3 px-4 py-3.5 transition-colors"
                   style={{
                     background: notif.read ? 'transparent' : 'rgba(244,167,185,0.06)',
@@ -176,7 +172,7 @@ export function ActivityPageClient() {
                   {!notif.read && (
                     <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#F4A7B9' }} />
                   )}
-                </motion.div>
+                </div>
               )
             })}
           </div>

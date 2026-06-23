@@ -1,9 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
 import { Heart, MessageCircle, Bookmark, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatRelativeTime, formatCount } from '@/lib/utils'
@@ -65,13 +64,11 @@ function ExternalLinkPill({ recommendation }: { recommendation: Recommendation }
   if (!href || !label) return null
 
   return (
-    <motion.a
+    <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      whileHover={{ scale: 1.04 }}
-      whileTap={{ scale: 0.96 }}
-      className="inline-flex items-center gap-1 rounded-full"
+      className="inline-flex items-center gap-1 rounded-full hover:scale-[1.04] active:scale-95 transition-transform duration-150"
       style={{
         ...pillStyle,
         fontFamily: "'DM Sans', sans-serif",
@@ -85,11 +82,11 @@ function ExternalLinkPill({ recommendation }: { recommendation: Recommendation }
     >
       <ExternalLink style={{ width: 10, height: 10 }} />
       {label}
-    </motion.a>
+    </a>
   )
 }
 
-export function FeedCard({
+function FeedCardComponent({
   recommendation,
   onLike,
   onSave,
@@ -141,12 +138,7 @@ export function FeedCard({
 
   return (
     <>
-      <motion.article
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className={cn('relative', className)}
-      >
+      <article className={cn('relative', className)}>
         <div
           className="rounded-[20px] overflow-hidden"
           style={{
@@ -156,7 +148,7 @@ export function FeedCard({
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 pt-4 pb-3">
-            <div className="flex items-center gap-2.5">
+            <Link href={`/profile/${recUser.username}`} className="flex items-center gap-2.5 min-w-0 flex-1 hover:opacity-80 transition-opacity">
               {/* Avatar */}
               <div className="relative w-9 h-9 rounded-full overflow-hidden flex-shrink-0">
                 {recUser.avatarUrl ? (
@@ -194,7 +186,7 @@ export function FeedCard({
                   @{recUser.username} · {formatRelativeTime(recommendation.createdAt)}
                 </p>
               </div>
-            </div>
+            </Link>
 
             <RecommendationMenu
               recommendationId={recommendation.id}
@@ -308,28 +300,21 @@ export function FeedCard({
           >
             <div className="flex items-center gap-4">
               {/* Like */}
-              <motion.button
+              <button
                 type="button"
                 onClick={handleLike}
-                animate={liked ? { scale: [1, 1.4, 1] } : { scale: 1 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-                className="flex items-center gap-1.5 group"
+                className="flex items-center gap-1.5 group active:scale-95 transition-transform duration-150"
                 aria-label={liked ? 'quitar like' : 'dar like'}
                 aria-pressed={liked}
               >
-                <motion.div
-                  animate={liked ? { scale: [1, 1.3, 1] } : {}}
-                  transition={{ duration: 0.25 }}
-                >
-                  <Heart
-                    className="w-5 h-5 transition-all duration-200"
-                    style={{
-                      color: liked ? '#F4A7B9' : '#B8A8B0',
-                      fill: liked ? '#F4A7B9' : 'none',
-                    }}
-                    strokeWidth={liked ? 0 : 1.5}
-                  />
-                </motion.div>
+                <Heart
+                  className="w-5 h-5 transition-all duration-200"
+                  style={{
+                    color: liked ? '#F4A7B9' : '#B8A8B0',
+                    fill: liked ? '#F4A7B9' : 'none',
+                  }}
+                  strokeWidth={liked ? 0 : 1.5}
+                />
                 <span
                   className="text-xs font-medium transition-colors"
                   style={{
@@ -339,7 +324,7 @@ export function FeedCard({
                 >
                   {formatCount(likesCount)}
                 </span>
-              </motion.button>
+              </button>
 
               {/* Comment */}
               <button
@@ -367,29 +352,23 @@ export function FeedCard({
 
             {/* Save */}
             <div className="relative">
-              <AnimatePresence>
-                {showSaveConfirm && (
-                  <motion.span
-                    initial={{ opacity: 0, y: 4, scale: 0.9 }}
-                    animate={{ opacity: 1, y: -2, scale: 1 }}
-                    exit={{ opacity: 0, y: -8, scale: 0.9 }}
-                    className="absolute right-0 -top-8 whitespace-nowrap text-[11px] font-medium px-2 py-1 rounded-full"
-                    style={{
-                      background: '#B8D8C9',
-                      color: '#2D5A3A',
-                      fontFamily: "'DM Sans', sans-serif",
-                    }}
-                  >
-                    guardado ♡
-                  </motion.span>
-                )}
-              </AnimatePresence>
+              {showSaveConfirm && (
+                <span
+                  className="absolute right-0 -top-8 whitespace-nowrap text-[11px] font-medium px-2 py-1 rounded-full animate-scale-in"
+                  style={{
+                    background: '#B8D8C9',
+                    color: '#2D5A3A',
+                    fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  guardado ♡
+                </span>
+              )}
 
-              <motion.button
+              <button
                 type="button"
                 onClick={handleSave}
-                whileTap={{ scale: 1.3 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                className="active:scale-110 transition-transform duration-150"
                 aria-label={saved ? 'quitar guardado' : 'guardar'}
                 aria-pressed={saved}
               >
@@ -401,11 +380,11 @@ export function FeedCard({
                   }}
                   strokeWidth={saved ? 0 : 1.5}
                 />
-              </motion.button>
+              </button>
             </div>
           </div>
         </div>
-      </motion.article>
+      </article>
 
       <CommentSheet
         recommendationId={recommendation.id}
@@ -415,3 +394,5 @@ export function FeedCard({
     </>
   )
 }
+
+export const FeedCard = memo(FeedCardComponent)

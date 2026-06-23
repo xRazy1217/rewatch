@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
       // Supabase storage
       { protocol: 'https', hostname: '*.supabase.co' },
+      // iTunes/Apple Music album covers
+      { protocol: 'https', hostname: '*.mzstatic.com' },
     ],
   },
 };

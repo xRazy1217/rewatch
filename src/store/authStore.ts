@@ -14,15 +14,19 @@ interface Profile {
 interface AuthState {
   user: User | null
   profile: Profile | null
+  isInitialized: boolean
   setUser: (user: User | null) => void
   setProfile: (profile: Profile | null) => void
+  setInitialized: (v: boolean) => void
   clear: () => void
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   profile: null,
+  isInitialized: false,
   setUser: (user) => set({ user }),
   setProfile: (profile) => set({ profile }),
-  clear: () => set({ user: null, profile: null }),
+  setInitialized: (v) => set({ isInitialized: v }),
+  clear: () => set({ user: null, profile: null, isInitialized: false }),
 }))
